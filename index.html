@@ -249,7 +249,7 @@
 
       function printCanvas() {
         const dataUrl = document.getElementById("layoutCanvas").toDataURL();
-        const win = window.open("", "_blank");
+        const win = window.open("", "_blank", "noopener,noreferrer");
         win.document.write(
           '<img src="' + dataUrl + '" onload="window.print();window.close()" />'
         );
