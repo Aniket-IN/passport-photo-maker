@@ -248,8 +248,8 @@
       }
 
       function printCanvas() {
-        const dataUrl = document.getElementById("layoutCanvas").toDataURL();
         const win = window.open("", "_blank");
+        const dataUrl = document.getElementById("layoutCanvas").toDataURL();
         win.document.write(
           '<img src="' + dataUrl + '" onload="window.print();window.close()" />'
         );
