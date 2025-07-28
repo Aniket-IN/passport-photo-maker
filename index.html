@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Passport Photo A4 Layout</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .controls,
+      .layout-controls {
+        margin-bottom: 20px;
+      }
+      #canvasWrapper {
+        border: 1px solid #ccc;
+        padding: 0; /* 🔧 FIXED: Removed padding to prevent margin bug */
+        overflow: auto;
+      }
+      canvas {
+        background: #fff;
+      }
+      #cropContainer {
+        margin-bottom: 10px;
+      }
+      #cropperContainer {
+        width: 500px;
+        max-height: 400px;
+        overflow: hidden;
+      }
+      #cropperContainer img {
+        max-width: 100%;
+        display: block;
+      }
+    </style>
+    <link
+      href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h2>Step 1: Upload and Crop Photo</h2>
+
+    <div class="controls">
+      <label
+        >Upload Photo:
+        <input type="file" id="photoInput" accept="image/*" /></label
+      ><br /><br />
+      <label
+        >Set Width (cm):
+        <input type="number" id="presetWidth" value="3.5" step="0.1" /></label
+      ><br /><br />
+      <label
+        >Set Height (cm):
+        <input type="number" id="presetHeight" value="4.5" step="0.1" /></label
+      ><br /><br />
+      <button id="finalizeCrop" disabled>Crop & Proceed to Layout</button>
+    </div>
+
+    <div id="cropperContainer">
+      <img id="cropImage" src="" style="display: none" />
+    </div>
+
+    <div id="layoutSection" style="display: none">
+      <h2>Step 2: Generate Layout</h2>
+      <div class="layout-controls">
+        <p>Photo Size: <span id="photoSizeDisplay"></span></p>
+        <label
+          >Gap Size (px): <input type="number" id="gapSize" value="10" /></label
+        ><br /><br />
+        <label
+          >Margin Top (px):
+          <input type="number" id="marginTop" value="0" /></label
+        ><br /><br />
+        <label
+          >Margin Right (px):
+          <input type="number" id="marginRight" value="0" /></label
+        ><br /><br />
+        <label
+          >Margin Bottom (px):
+          <input type="number" id="marginBottom" value="0" /></label
+        ><br /><br />
+        <label
+          >Margin Left (px):
+          <input type="number" id="marginLeft" value="0" /></label
+        ><br /><br />
+        <label
+          >Max Copies (0 = auto-fill):
+          <input type="number" id="maxCopies" value="0" /></label
+        ><br /><br />
+        <button onclick="generateLayout()">Generate Layout</button>
+        <button onclick="printCanvas()">Print</button>
+      </div>
+
+      <div id="canvasWrapper">
+        <canvas id="layoutCanvas"></canvas>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+    <script>
+      const A4_WIDTH_MM = 210;
+      const A4_HEIGHT_MM = 297;
+      const MM_TO_PX = 3.7795;
+      const CM_TO_PX = MM_TO_PX * 10;
+      const A4_WIDTH_PX = Math.round(A4_WIDTH_MM * MM_TO_PX);
+      const A4_HEIGHT_PX = Math.round(A4_HEIGHT_MM * MM_TO_PX);
+
+      let cropper = null;
+      let croppedImage = null;
+      let uploadedImage = null;
+
+      let selectedWidthCm = 3.5;
+      let selectedHeightCm = 4.5;
+
+      const cropImageElement = document.getElementById("cropImage");
+      const finalizeButton = document.getElementById("finalizeCrop");
+
+      function updateCropperAspectRatio() {
+        if (!cropper) return;
+        selectedWidthCm = parseFloat(
+          document.getElementById("presetWidth").value
+        );
+        selectedHeightCm = parseFloat(
+          document.getElementById("presetHeight").value
+        );
+        const aspectRatio = selectedWidthCm / selectedHeightCm;
+        cropper.setAspectRatio(aspectRatio);
+      }
+
+      document
+        .getElementById("presetWidth")
+        .addEventListener("input", updateCropperAspectRatio);
+      document
+        .getElementById("presetHeight")
+        .addEventListener("input", updateCropperAspectRatio);
+
+      document
+        .getElementById("photoInput")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            cropImageElement.src = event.target.result;
+            cropImageElement.style.display = "block";
+            cropImageElement.onload = () => {
+              selectedWidthCm = parseFloat(
+                document.getElementById("presetWidth").value
+              );
+              selectedHeightCm = parseFloat(
+                document.getElementById("presetHeight").value
+              );
+              const aspectRatio = selectedWidthCm / selectedHeightCm;
+
+              if (cropper) cropper.destroy();
+              cropper = new Cropper(cropImageElement, {
+                viewMode: 1,
+                aspectRatio: aspectRatio,
+                autoCropArea: 1,
+                movable: true,
+                scalable: false,
+                zoomable: true,
+                rotatable: false,
+                cropBoxResizable: true,
+                dragMode: "move",
+              });
+              finalizeButton.disabled = false;
+            };
+          };
+          reader.readAsDataURL(file);
+        });
+
+      finalizeButton.addEventListener("click", () => {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas();
+        croppedImage = new Image();
+        croppedImage.onload = () => {
+          uploadedImage = croppedImage;
+          document.getElementById("layoutSection").style.display = "block";
+          document.getElementById(
+            "photoSizeDisplay"
+          ).innerText = `${selectedWidthCm} cm x ${selectedHeightCm} cm`;
+        };
+        croppedImage.src = canvas.toDataURL();
+      });
+
+      function generateLayout() {
+        if (!uploadedImage) {
+          alert("Please upload and crop the image first.");
+          return;
+        }
+
+        const gap = parseInt(document.getElementById("gapSize").value);
+        const maxCopies = parseInt(document.getElementById("maxCopies").value);
+
+        const marginTop = parseInt(document.getElementById("marginTop").value);
+        const marginRight = parseInt(
+          document.getElementById("marginRight").value
+        );
+        const marginBottom = parseInt(
+          document.getElementById("marginBottom").value
+        );
+        const marginLeft = parseInt(
+          document.getElementById("marginLeft").value
+        );
+
+        const photoWidthPx = Math.round(selectedWidthCm * CM_TO_PX);
+        const photoHeightPx = Math.round(selectedHeightCm * CM_TO_PX);
+
+        const canvas = document.getElementById("layoutCanvas");
+        canvas.width = A4_WIDTH_PX;
+        canvas.height = A4_HEIGHT_PX;
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const usableWidth = A4_WIDTH_PX - marginLeft - marginRight;
+        const usableHeight = A4_HEIGHT_PX - marginTop - marginBottom;
+
+        const cols = Math.floor((usableWidth + gap) / (photoWidthPx + gap));
+        const rows = Math.floor((usableHeight + gap) / (photoHeightPx + gap));
+        const total = cols * rows;
+
+        let drawCount = maxCopies > 0 ? Math.min(maxCopies, total) : total;
+
+        let count = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (count >= drawCount) break;
+            const x = marginLeft + c * (photoWidthPx + gap);
+            const y = marginTop + r * (photoHeightPx + gap);
+            ctx.drawImage(
+              uploadedImage,
+              0,
+              0,
+              uploadedImage.width,
+              uploadedImage.height,
+              x,
+              y,
+              photoWidthPx,
+              photoHeightPx
+            );
+            count++;
+          }
+          if (count >= drawCount) break;
+        }
+      }
+
+      function printCanvas() {
+        const dataUrl = document.getElementById("layoutCanvas").toDataURL();
+        const win = window.open("", "_blank");
+        win.document.write(
+          '<img src="' + dataUrl + '" onload="window.print();window.close()" />'
+        );
+        win.document.close();
+      }
+    </script>
+  </body>
+</html>
