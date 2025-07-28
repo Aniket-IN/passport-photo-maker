@@ -1,31 +1,27 @@
+const commonPresentProps = {
+  gap: 5,
+  marginTop: 10,
+  marginRight: 0,
+  marginBottom: 0,
+  marginLeft: 10,
+};
+
 // --- Preset definitions ---
 const PRESETS = {
   "7x7": {
     width: 2.8,
     height: 3.6,
-    gap: 5,
-    marginTop: 10,
-    marginRight: 0,
-    marginBottom: 0,
-    marginLeft: 10,
-  },
-  "5x5": {
-    width: 4,
-    height: 5.14,
-    gap: 5,
-    marginTop: 10,
-    marginRight: 0,
-    marginBottom: 0,
-    marginLeft: 10,
+    ...commonPresentProps,
   },
   "6x6": {
     width: 3.3,
     height: 4.24,
-    gap: 5,
-    marginTop: 10,
-    marginRight: 0,
-    marginBottom: 0,
-    marginLeft: 10,
+    ...commonPresentProps,
+  },
+  "5x5": {
+    width: 4,
+    height: 5.14,
+    ...commonPresentProps,
   },
   // Add more presets as needed
 };
