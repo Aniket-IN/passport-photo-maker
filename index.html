@@ -42,6 +42,17 @@
     <h2>Step 1: Upload and Crop Photo</h2>
 
     <div class="controls">
+      <label>
+        Preset:
+        <select id="presetSelector">
+          <option value="custom">Custom</option>
+          <option value="7x7">2.8cm x 3.6cm (7x7)</option>
+          <option value="6x6">4cm x 5.14cm (6x6)</option>
+          <option value="5x5">3.3cm x 4.24cm (5x5)</option>
+          <!-- Add more presets as needed -->
+        </select>
+      </label>
+      <br /><br />
       <label
         >Upload Photo:
         <input type="file" id="photoInput" accept="image/*" /></label

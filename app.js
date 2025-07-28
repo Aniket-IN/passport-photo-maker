@@ -1,3 +1,35 @@
+// --- Preset definitions ---
+const PRESETS = {
+  "7x7": {
+    width: 2.8,
+    height: 3.6,
+    gap: 5,
+    marginTop: 10,
+    marginRight: 0,
+    marginBottom: 0,
+    marginLeft: 10,
+  },
+  "5x5": {
+    width: 4,
+    height: 5.14,
+    gap: 5,
+    marginTop: 10,
+    marginRight: 0,
+    marginBottom: 0,
+    marginLeft: 10,
+  },
+  "6x6": {
+    width: 3.3,
+    height: 4.24,
+    gap: 5,
+    marginTop: 10,
+    marginRight: 0,
+    marginBottom: 0,
+    marginLeft: 10,
+  },
+  // Add more presets as needed
+};
+
 const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 const MM_TO_PX = 3.7795;
@@ -15,6 +47,39 @@ let selectedHeightCm = 4.5;
 const cropImageElement = document.getElementById("cropImage");
 const finalizeButton = document.getElementById("finalizeCrop");
 
+// --- Preset selector logic ---
+document
+  .getElementById("presetSelector")
+  .addEventListener("change", function (e) {
+    if (e.target.value === "custom") {
+      // Enable manual input fields
+      setInputsDisabled(false);
+      return;
+    }
+    // Fill in values from preset
+    const p = PRESETS[e.target.value];
+    document.getElementById("presetWidth").value = p.width;
+    document.getElementById("presetHeight").value = p.height;
+    document.getElementById("gapSize").value = p.gap;
+    document.getElementById("marginTop").value = p.marginTop;
+    document.getElementById("marginRight").value = p.marginRight;
+    document.getElementById("marginBottom").value = p.marginBottom;
+    document.getElementById("marginLeft").value = p.marginLeft;
+    setInputsDisabled(true); // Lock out manual edit unless "Custom" is selected
+  });
+
+function setInputsDisabled(disabled) {
+  document.getElementById("presetWidth").disabled = disabled;
+  document.getElementById("presetHeight").disabled = disabled;
+  document.getElementById("gapSize").disabled = disabled;
+  document.getElementById("marginTop").disabled = disabled;
+  document.getElementById("marginRight").disabled = disabled;
+  document.getElementById("marginBottom").disabled = disabled;
+  document.getElementById("marginLeft").disabled = disabled;
+  // Max copies stays editable always
+}
+
+// --- Cropper aspect ratio logic ---
 function updateCropperAspectRatio() {
   if (!cropper) return;
   selectedWidthCm = parseFloat(document.getElementById("presetWidth").value);
@@ -92,8 +157,12 @@ function generateLayout() {
   const marginBottom = parseInt(document.getElementById("marginBottom").value);
   const marginLeft = parseInt(document.getElementById("marginLeft").value);
 
-  const photoWidthPx = Math.round(selectedWidthCm * CM_TO_PX);
-  const photoHeightPx = Math.round(selectedHeightCm * CM_TO_PX);
+  const photoWidthPx = Math.round(
+    parseFloat(document.getElementById("presetWidth").value) * CM_TO_PX
+  );
+  const photoHeightPx = Math.round(
+    parseFloat(document.getElementById("presetHeight").value) * CM_TO_PX
+  );
 
   const canvas = document.getElementById("layoutCanvas");
   canvas.width = A4_WIDTH_PX;
