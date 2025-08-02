@@ -1,5 +1,5 @@
 const commonPresentProps = {
-  gap: 5,
+  gap: 10,
   marginTop: 10,
   marginRight: 0,
   marginBottom: 0,
@@ -9,18 +9,18 @@ const commonPresentProps = {
 // --- Preset definitions ---
 const PRESETS = {
   "7x7": {
-    width: 2.8,
-    height: 3.6,
+    width: 2.7,
+    height: 3.47,
     ...commonPresentProps,
   },
   "6x6": {
-    width: 3.3,
-    height: 4.24,
+    width: 3.2,
+    height: 4.11,
     ...commonPresentProps,
   },
   "5x5": {
-    width: 4,
-    height: 5.14,
+    width: 3.9,
+    height: 5.01,
     ...commonPresentProps,
   },
   // Add more presets as needed
